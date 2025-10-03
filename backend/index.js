@@ -30,8 +30,8 @@ app.get("/",(req,res)=>{
 
 app.post("/create-account", async (req,res)=>{
     const { fullname, email,password} = req.body;
-    if(!fullName) {
-        return res.status(400).json({error: true, message: "Full Naame is Required"});
+    if(!fullname) {
+        return res.status(400).json({error: true, message: "Full Name is Required"});
     }
     if(!email) {
         return res.status(400).json({error: true, message: "Email is Required"});
@@ -50,7 +50,7 @@ app.post("/create-account", async (req,res)=>{
     }
 
     const user = new User({
-        fullName , 
+        fullname , 
         email , 
         password , 
     });
@@ -90,7 +90,7 @@ app.post("/login", async (req , res)=>{
     if(userInfo.email  == email && userInfo.password == password){
         const user = {user: userInfo };
         const accessToken = jwt.sign(user , process.env.ACCESS_TOKEN_SECRET,{
-            espiresIn: "36000m"
+            expiresIn: "36000m"
         });
 
         return res.json({
@@ -112,7 +112,7 @@ app.post("/login", async (req , res)=>{
 
 //Get User
 
-app.get("/login", authenticateToken , async (req , res)=>{
+app.get("/get-user", authenticateToken , async (req , res)=>{
     const {user} = req.user;
     const isUser = await User.findOne({_id:user._id});
 
@@ -120,7 +120,7 @@ app.get("/login", authenticateToken , async (req , res)=>{
         return res.sendStatus(401);  
     }
     return res.json({
-        user: {fullName : isUser.fullName , 
+        user: {fullname : isUser.fullname , 
                 email: isUser.email,
                 createdOn: isUser.createdOn,
                 _id: isUser._id,
@@ -213,7 +213,7 @@ app.get("/get-all-note",authenticateToken , async (req,res)=>{
     const {user} = req.user;
     
     try{
-        const note = await Note.find({ userId : user._id}).sort({ isPined: -1 });
+        const note = await Note.find({ userId : user._id}).sort({ isPinned: -1 });
         if(!note){
             return res.status(404).json({
                 error: true,
@@ -242,7 +242,7 @@ app.delete("/delete-note/:noteId",authenticateToken , async (req,res)=>{
     const {user} = req.user;
 
     try{
-        const note  = await Note.findOne({ _id: noteId , userId: user._Id })
+        const note  = await Note.findOne({ _id: noteId , userId: user._id })
         if(!note){
             return res.status(404).json({
                 error: true,
@@ -252,7 +252,7 @@ app.delete("/delete-note/:noteId",authenticateToken , async (req,res)=>{
 
         await Note.deleteOne({
             _id: noteId , 
-            userId: user._Id
+            userId: user._id
         });
         return res.json({
             error: false,
@@ -268,7 +268,7 @@ app.delete("/delete-note/:noteId",authenticateToken , async (req,res)=>{
         });
     }
 
-});
+}); 
 
 //Update isPinned Value
 
@@ -285,7 +285,7 @@ app.put("/update-note-pinned/:noteId",authenticateToken , async (req,res)=>{
             });
         }
      
-        if(isPinned) note.isPinned = isPinned ;
+        note.isPinned = isPinned ;
         
         await note.save();
 
@@ -302,6 +302,36 @@ app.put("/update-note-pinned/:noteId",authenticateToken , async (req,res)=>{
         });
     }
 });
+
+//Search Note
+app.get("/search-note/",authenticateToken, async (req,res)=>{
+    const {user} = req.user;
+    const {query} = req.query;
+
+    if(!query){
+        return res.status(400).json({error: true,message: "Search query is requires"});
+    }
+    try{
+        const matchingNotes = await Note.find({
+            userId: user._id,
+            $or: [
+                {title: {$regex: new RegExp(query, "i")}},
+                {content: {$regex: new RegExp(query, "i")}},
+            ],
+        });
+        return res.json({
+            error: false,
+            notes: matchingNotes,
+            message: "Notes matching the search query retrieved successfully ",
+        });
+    }
+    catch(error){
+        return res.status(500).json({
+            error: true,
+            message: "Internal Server Error",
+        });
+    }
+})
 
 app.listen(8000,function(){
     console.log("ok ok");

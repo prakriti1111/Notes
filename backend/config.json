@@ -1,4 +1,6 @@
 {
-    "connectionString": "mongodb+srv://note-user:y6hMnNkjEaW5NpGe@cluster0.iyvgfne.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+    "connectionString": "mongodb+srv://noteuser:note123456@notecluster.y0vqrpp.mongodb.net/?retryWrites=true&w=majority&appName=notecluster"
 
 }
+
+

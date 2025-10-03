@@ -17,11 +17,13 @@ const noteSchema = new Schema({
         default: false
     },
     userId: {
-        type: String,
+        type: Schema.Types.ObjectId,
+        ref: "User",
         required: true
     },
     createdOn: {
-        
+        type: Date,
+        default: Date.now
     },
 });
 

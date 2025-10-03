@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
-    fullName : {
+    fullname : {
         type: String
     },
     email : {
@@ -13,7 +13,7 @@ const userSchema = new Schema({
     },
     createdOn : {
         type: Date,
-        default: new Date().getTime 
+        default: Date.now() 
     }
 })
 
